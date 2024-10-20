@@ -45,6 +45,7 @@
 - **API**: Django Rest Framework (DRF) for RESTful API integration with the React Native app
 - **Charts**: Recharts for data visualization on the web
 - **Maps**: Google Maps API for geographic data
+
 - **Permissions**: Role-based access control (RBAC) using Django’s permission system
 
 ### User Application (React Native)
