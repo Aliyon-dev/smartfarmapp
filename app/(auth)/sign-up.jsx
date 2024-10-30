@@ -54,24 +54,16 @@ const SignUp = () =>{
 
     const submitForm = async ()=>{
         setIsLoading(true)
-        try{   
-            console.log("try block")
-            axios.post('http://192.168.130.86:8000/api/register',{
-                box_id:formData.box_id,
-                password:formData.password,
-                first_name:formData.first_name,
-                last_name:formData.last_name,
-                email:formData.email,
-                phone:formData.phone,
-                country:formData.country,
-                state:formData.state
-            })
+        console.log(formData)
+        try{
+            axios.post('https://smartfarmapi.pythonanywhere.com/api/auth/register', formData)
             .then(response=>{
                 console.log(response.status)
                 setModalVisible(true)
             })
             .catch(error=>{
-                console.log(error)
+                Alert.alert("alert", error.reponse.data.message)
+                console.log(error.response)
             })
         }
         catch(error){
@@ -105,93 +97,83 @@ const validate = ()=>{
 
     switch(step){
         case 1:
-            if(!formData.box_id){
-                handleError('please enter box ID', 'box_id')
-                valid = false
-                }
-            if(formData.box_id.length < 6){
-                handleError('Box ID must be 6 character long', 'box_id')
-                valid = false
+
+            if(formData.password.length < 6){
+                handleError('password must be at least 6 characters long', 'password')
             }
 
-            if(formData.box_id &&  formData.box_id.length >=6){
+            if(!formData.box_id || formData.box_id.length < 6){
+                handleError('Box ID must be 6 character long', 'box_id')
+                }
+
+            else if(formData.box_id &&  formData.box_id.length >=6 && formData.password.length > 6){
                 setIsLoading(true)
-                axios.get(`http://192.168.130.86:8000/api/get-box/${formData.box_id}`)
+                console.log(formData.box_id)
+                axios.get(`https://smartfarmapi.pythonanywhere.com/api/auth/get-box/${formData.box_id}`)
                 .then(response =>{
                     data = response.data
                     setIsLoading(false)
                     if(data.data.isTaken == true){
-                        valid=false
+
                         handleError(`box with id ${formData.box_id} is taken`, 'box_id')
-                        console.log('if check', valid)
-                    
+                    }
+                    else{
+                        handleNextStep()
                     }
                 })
                 .catch(error=>{
+                    console.log('this is the error:', error)
                     valid = false
                     setIsLoading(false)
-                    handleError(`box not found ensure you have entered the correct box ID`, 'box_id')
+                    handleError(error)
                 })
-            }
-            console.log('out if ', valid)
-   
-            if(formData.password.length < 6){
-                handleError('password must be at least 6 characters long', 'password')
-                valid=false
-            }
-        
-            if(valid==true){
-                console.log('fuck', valid)
-                handleNextStep()
             }
 
         case 2:
             if(!formData.first_name){
                 handleError('please enter your first name', 'first_name')
-                valid = false
+                return
             }
 
             if(!formData.last_name){
                 handleError('please enter your last name', 'last_name')
-                valid = false
+                return 
             }
 
             if(!formData.email){
                 handleError('please enter email', 'email')
-                valid = false
+                return
             }else if(!formData.email.match(/\S+@\S+\.\S+/)){
                 handleError('please enter a valid email', 'email')
-                valid=false
+                return
             }
-
-            if(valid){
-                handleNextStep()
-            }
+            handleNextStep()
 
         case 3:
             if(!formData.phone){
                 handleError('please enter your phone number', 'phone')
-                valid = false
+                return
             }
             if(formData.phone.length < 13){
                 handleError('phone number  must be 12 digits long', 'phone')
             }
-            else if(!formData.phone.match(/^\+260\s?\d{9}$/))
+            else if(!formData.phone.match(/^\+260\s?\d{9}$/)){
                 handleError('Phone number must start with "+260"', 'phone')
+                return
+            }
+                
 
             if(!formData.country){
                 handleError('please select country', 'country')
-                valid = false
+                return
             }
 
             if(!formData.state){
                 handleError('please select state or province', 'state')
-                valid = false
+                return
             }
 
-            if(valid){
-                submitForm()
-            }
+            submitForm();
     }
 
 }
@@ -212,7 +194,7 @@ const renderStep = () =>{
         switch(step){
             case 1:
                 return(
-                    <SafeAreaView style={{gap:24}}>
+                    <SafeAreaView style={{gap:24, backgroundColor: "#ffffff"}}>
                         <View style={{gap: 28}}>
                             <Input 
                                 label="Box ID" 
@@ -229,9 +211,9 @@ const renderStep = () =>{
 
                             <Input
                                 password={true}
-                                label="Password"
+                                label=" Create Password"
                                 iconName="lock"
-                                placeholder="Enter password"
+                                placeholder="create password"
                                 onChangeText={(text) => handleInput('password', text)}
                                 value={formData.password}
                                 error = {errors.password}
@@ -249,7 +231,7 @@ const renderStep = () =>{
                             <Button
                                 title="Create Account"
                                 loading={isLoading}
-                                onPress={handleNextStep}
+                                onPress={validate}
                             />
                         </View>
                                 
@@ -257,7 +239,8 @@ const renderStep = () =>{
                             <Text style={{fontSize: 14}}>
                                 Already have an account?
                             </Text>
-                            <TouchableOpacity style={styles.touch}>
+                            <TouchableOpacity style={styles.touch}
+                            onPress={()=>{router.push('/sign-in')}}>
                                 <Text style={{color: '#5D87FF', fontWeight: '600' }}>Login</Text>
                             </TouchableOpacity>
                         </View>
@@ -324,7 +307,7 @@ const renderStep = () =>{
                             <Button
                                 title="Next Step"
                                 loading={isLoading}
-                                onPress={handleNextStep}
+                                onPress={validate}
                             />
 
                             <Button
@@ -386,7 +369,7 @@ const renderStep = () =>{
                     <Button
                         title="Finish registration"
                         loading={isLoading}
-                        onPress={setModalVisible}
+                        onPress={validate}
                     />
 
                     <Button
@@ -400,7 +383,7 @@ const renderStep = () =>{
     }
 
     return (
-        <SafeAreaView className = "bg-white h-full">
+        <SafeAreaView style={styles.safeArea}>
           <ScrollView>
             <View className="p-4">
             <CenteredModal
@@ -433,6 +416,12 @@ const renderStep = () =>{
 }
 
 export const styles = StyleSheet.create({
+
+safeArea:{
+    height: '100%',
+    backgroundColor: 'white',
+    padding: 16,
+},
   layout:{
     padding: 16,
     justifyContent: 'center',

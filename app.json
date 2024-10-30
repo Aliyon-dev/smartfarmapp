@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "smartfarm",
-    "scheme": "Aora",
+    "scheme": ["Aora"],
     "slug": "smartfarm",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,13 +19,19 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.aliyondev.smartfarm"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "41e1416f-a1f2-4337-b8a0-68aac40d46f2"
+      }
+    }
   }
 }

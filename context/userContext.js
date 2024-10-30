@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useState } from "react";
 import { login, getUser } from "../hooks/apis";
 export const UserContext = createContext(); 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {Alert} from 'react-native'
 
 
 export const UserContextProvider = ({ children }) =>{
@@ -37,11 +38,11 @@ export const UserContextProvider = ({ children }) =>{
         try {
             const { token, user } = await login(email, password);
             await AsyncStorage.setItem('userToken', token);
+            console.log("this is the user",user)
             setUser(user);
             setIsLoggedIn(true);
             return true;
         } catch (error) {
-            console.error('Login failed:', error);
             return false;
         } finally {
             setIsLoading(false);
@@ -50,12 +51,13 @@ export const UserContextProvider = ({ children }) =>{
 
     const logout = ()=>{
 
+
     }
 
 
 
     return (
-        <UserContext.Provider value={{userLogin, isLoading, isLoggedIn, user}}>
+        <UserContext.Provider value={{userLogin, isLoading, isLoggedIn, user, logout}}>
             {children}
         </UserContext.Provider>
     )

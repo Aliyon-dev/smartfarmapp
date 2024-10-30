@@ -7,9 +7,9 @@ import { UserContext } from '../../context/userContext'
 
 const home = () => {
   const {user} =  useContext(UserContext)
-  console.log(user)
+  console.log("user:", user)
   return (
-    <SafeAreaView className="bg-grey h-full  p-4">
+    <SafeAreaView style={{height: '100%', padding: 16}}>
       <ScrollView>
         <View style={styles.layout}>
               {/*  topBar */}
@@ -25,7 +25,7 @@ const home = () => {
                         Good Afternoon
                     </Text>
                     <Text style={{fontSize: 16, fontWeight: '400'}}>
-                        {user.data.email}
+                        {user.email}
                     </Text>
                 </View>
                 <View style={{marginLeft: 100}}>

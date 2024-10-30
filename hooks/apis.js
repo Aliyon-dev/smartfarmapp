@@ -48,3 +48,15 @@ export const getUser =  async () =>{
         throw error;
     }
 }
+
+
+export const register =  async (user)=>{
+    try{
+        const response = await axios.post('https://smartfarmapi.pythonanywhere.com/api/auth/register', {user});
+        return response.data
+    }
+    catch(error){
+        console.log(error)
+        throw(error)
+    }
+}
