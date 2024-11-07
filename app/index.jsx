@@ -3,7 +3,6 @@ import { ScrollView, StyleSheet, Text, View, Image } from 'react-native';
 import {Link, Redirect, router} from 'expo-router'
 import { Registration } from '../components/screens/Registration';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import logo from '../assets/logo.png'
 import LottieView  from 'lottie-react-native'
 import intro from '../assets/intro.json'
 import { Button } from '../components/elements/Button';
@@ -99,7 +98,6 @@ const styles = StyleSheet.create({
   intro_text:{
     fontSize: 26,
     fontWeight: 'bold',
-    fontFamily: 'opensans',
     textAlign: 'center'
 
   },

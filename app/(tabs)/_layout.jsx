@@ -70,7 +70,7 @@ const TabsLayout = () => {
 
                 {/* Center AI button with cutout */}
                 <Tabs.Screen
-                    name="farm-ai"
+                    name="(farm-ai)"
                     options={{
                         headerShown: false,
                         title: '',

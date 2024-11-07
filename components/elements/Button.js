@@ -53,7 +53,7 @@ export const styles =  StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         color: 'white',
-        backgroundColor: '#5D87FF',
+        backgroundColor: '#2196F3',
         paddingVertical: 10,
         paddingHorizontal: 24,
         fontSize: 16,
