@@ -14,20 +14,22 @@ const home = () => {
         <View style={styles.layout}>
               {/*  topBar */}
               <View style={styles.intro}>
-                <View>
+                <View style={{flex:1, flexDirection:'row', alignItems:'center'}}>
                     <Image
                     style={{height: 56, width: 56}}
                     source={require('../../assets/images/avatar.png')}
                     />
-                </View>
-                <View style={{marginLeft: 10}}> 
+
+                    <View style={{marginLeft: 10}}> 
                     <Text style={{fontSize: 12}}>
                         Good Afternoon
                     </Text>
                     <Text style={{fontSize: 16, fontWeight: '400'}}>
-                        {user.email}
+                        {"Aliyon"}
                     </Text>
                 </View>
+                </View>
+
                 <View style={{marginLeft: 100}}>
                     <Image
                       resizeMode="contain"
@@ -48,14 +50,16 @@ const home = () => {
                           <Text style={styles.date_text}>Lusaka 10 OCT 2024</Text>
                           <Text style={{color: 'white', fontSize: 40}}>28 C</Text>
                         </View>
-                      </View>
 
-                      <View style={styles.clouds}>
+                        <View style={styles.clouds}>
                           <Weather
                           state="windy"
                           />
-
                         </View>
+
+                      </View>
+
+                  
 
                       <View style={styles.bottom_weather_section}>
                         <View style={{borderBottomColor: 'white', borderBottomWidth: 1, marginVertical: 10}}></View>
@@ -141,6 +145,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between'
   },
 
   weather_section:{
@@ -157,13 +162,11 @@ const styles = StyleSheet.create({
     gap: 12
   },
   clouds:{
-    position: 'absolute',
-    left: 220,
   },
   top_weather_section:{
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
 
   },
   date_text:{
