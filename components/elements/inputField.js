@@ -1,5 +1,5 @@
 import {View, Text, TextInput} from 'react-native'
-import { styles } from '../../assets/styles'
+import { GlobalStyles } from '../../assets/styles'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import { useState } from 'react'
 
@@ -18,9 +18,9 @@ export const Input = ({
     const[hidePassword, setHidePassword] = useState(password)
     return(
         <View>
-            <Text style={[styles.input_title, {marginBottom: 12}]}>{label}</Text>
+            <Text style={[GlobalStyles.input_title, {marginBottom: 12}]}>{label}</Text>
             <View style={[
-                styles.inputContainer, 
+                GlobalStyles.inputContainer, 
                 {
                     borderColor: 
                         error? 

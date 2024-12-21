@@ -20,7 +20,6 @@ import { ActivityIndicator } from 'react-native';
 export default function App() {
   const fontsLoaded = useFonts();
   const {isLoading, isLoggedIn} =  useContext(UserContext)
-  console.log(isLoading, "peace", isLoggedIn)
 
   if(isLoading){
     return(

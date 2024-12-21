@@ -1,7 +1,8 @@
-import { View, Text, SafeAreaView, StyleSheet, Image } from 'react-native'
+import { View, Text, SafeAreaView, StyleSheet, Image, Pressable } from 'react-native'
 import React from 'react'
 import { TypewriterText } from '../../../components/elements/typewriter'
-
+import { router } from 'expo-router'
+import { AnimatedTyping } from '../../../components/elements/Writer'
 
 
 
@@ -16,11 +17,15 @@ const FarmAi = () => {
             source={require('../../../assets/icons/terra.png')}/>
         </View>
         <View style={styles.textContainer}>
-          <TypewriterText
-          title={" Welcome To Terra.Ai"}/>
+          <AnimatedTyping text={["Welcome To Terra.Ai"]} f_color={"#615FF"} size={30}/>
+
         </View>
         <View style={styles.bento}>
           <View style={styles.flex_2}>
+            <Pressable 
+            onPress={()=>{
+              router.push('/crop_health')
+            }}>
             <View>
               <Image
                 style={styles.svg}
@@ -28,6 +33,7 @@ const FarmAi = () => {
                 source={require('../../../assets/icons/Crop.png')
               }/>
             </View>
+            </Pressable>
 
             <View>
               <Text style={styles.title_text}>Crop Health</Text>

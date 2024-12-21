@@ -1,9 +1,13 @@
 import { StyleSheet } from "react-native";
 
-export const styles = StyleSheet.create({
+export const GlobalStyles = StyleSheet.create({
     layout:{
-        margin: 16,
-        gap: 56
+        flex:1,
+        height: '100%',
+        padding:16,
+        justifyContent:'center',
+        alignItems:'center',
+        marginTop: 52,
     },
 
     flex:{

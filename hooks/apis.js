@@ -26,7 +26,6 @@ export const login =  async (email, password)=>{
     try{
         const response =  await axios.post('https://smartfarmapi.pythonanywhere.com/api/auth/login', {email, password});
         const {token, user} = response.data;
-        console.log(token, user)
 
         //store token
         await AsyncStorage.setItem('userToken', token)
@@ -41,6 +40,17 @@ export const login =  async (email, password)=>{
 export const getUser =  async () =>{
     try{
         const response =  await api.get('/auth/user');
+        return response.data
+    }
+    catch(error){
+        console.error(error)
+        throw error;
+    }
+}
+
+export const assess_farm = async ()=>{
+    try{
+        const response = await api.get('/ai/assess-farm')
         return response.data
     }
     catch(error){
