@@ -40,6 +40,11 @@ const TabsLayout = () => {
                     tabBarStyle: styles.barStyle,
                     tabBarActiveTintColor: '#007AFF',
                     tabBarInactiveTintColor: '#7E7E7E',
+                    android: {
+                        animation: 'fade',
+                        presentation: 'modal'
+                      },
+                      
                 }}
             >
                 <Tabs.Screen

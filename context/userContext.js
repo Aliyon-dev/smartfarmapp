@@ -3,7 +3,7 @@ import { login, getUser } from "../hooks/apis";
 export const UserContext = createContext(); 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {Alert} from 'react-native'
-
+import { getWeather } from "../hooks/helperapi";
 
 export const UserContextProvider = ({ children }) =>{
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -13,14 +13,24 @@ export const UserContextProvider = ({ children }) =>{
 
     useEffect(() => {
         // Check for existing login session when the app starts
+        checkWeatherStatus();
         checkLoginStatus();
     }, []);
 
+
+    const checkWeatherStatus =  async () => {
+        try{
+            const weather = await getWeather();
+        }
+        catch(error){
+            console.log(error);
+        }
+        
+    }
     const checkLoginStatus = async () => {
         setIsLoading(true);
         try {
             const token = await AsyncStorage.getItem('userToken');
-            console.log(token)
             if (token) {
                 const userDetails = await getUser(token);
                 setUser(userDetails);
@@ -38,7 +48,6 @@ export const UserContextProvider = ({ children }) =>{
         try {
             const { token, user } = await login(email, password);
             await AsyncStorage.setItem('userToken', token);
-            console.log("this is the user",user)
             setUser(user);
             setIsLoggedIn(true);
             return true;

@@ -54,7 +54,6 @@ const SignUp = () =>{
 
     const submitForm = async ()=>{
         setIsLoading(true)
-        console.log(formData)
         try{
             axios.post('https://smartfarmapi.pythonanywhere.com/api/auth/register', formData)
             .then(response=>{

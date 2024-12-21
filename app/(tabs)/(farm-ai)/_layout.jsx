@@ -6,8 +6,16 @@ const farmlayout = () => {
   return (
     <>
     <Stack screenOptions={{headerShown: false}}>
+
         <Stack.Screen
-           name="assistant"
+           name="index"
+           options={{
+             headerShown: false
+           }} 
+        />
+
+        <Stack.Screen
+           name="crop_health"
            options={{
              headerShown: false
            }} 

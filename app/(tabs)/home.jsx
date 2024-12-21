@@ -1,13 +1,76 @@
-import { StyleSheet, Text, View, Image, ScrollView } from 'react-native'
+import { StyleSheet, Text, View, Image, ScrollView, Platform, PermissionsAndroid} from 'react-native'
+import { useEffect, useState } from 'react'
 import React, { useContext } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Weather } from '../../components/elements/Weather'
 import { SensorCard } from '../../components/elements/sensor_card'
 import { UserContext } from '../../context/userContext'
+import * as Location from 'expo-location'
 
 const home = () => {
+  const [date, setDate] = useState()
+  const [greeting, setGreeting] = useState("")
+  const [location, setLocation] = useState("")
+
+
+
+  useEffect(() => {
+    getDate()
+    getGreeting()
+    getLocation()
+  }, [])
+
+
+  const getGreeting = () => {
+    let time = new Date().getHours()
+
+    if(time < 12){
+      setGreeting("Good Morning")
+    }else if(time < 18){
+      setGreeting("Good Afternoon")
+    }else{
+      setGreeting("Good Evening")
+    }
+  }
+  
+  const getDate = () => {
+    new_date = new Date().toDateString()
+    setDate(new_date)
+  }
+
+  const getLocation = async () => {
+    try{
+      const {status} = await Location.requestForegroundPermissionsAsync();
+      if(status !== 'granted'){
+        console.log("Permission to access location was denied")
+        return
+      }
+
+      const currentLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High
+      });
+
+
+      const reverseGeocode = await Location.reverseGeocodeAsync({
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude
+      })
+
+      if(reverseGeocode.length > 0){
+        setLocation(reverseGeocode[0].city)
+   
+
+      }
+    }
+    catch(error){
+      console.log(error)
+    }
+
+
+  }
+
   const {user} =  useContext(UserContext)
-  console.log("user:", user)
+  console.log(user.data.first_name)
   return (
     <SafeAreaView style={{height: '100%', padding: 16}}>
       <ScrollView>
@@ -22,10 +85,10 @@ const home = () => {
 
                     <View style={{marginLeft: 10}}> 
                     <Text style={{fontSize: 12}}>
-                        Good Afternoon
+                        {greeting}
                     </Text>
                     <Text style={{fontSize: 16, fontWeight: '400'}}>
-                        {"Aliyon"}
+                        {user.data.first_name} {user.data.last_name}
                     </Text>
                 </View>
                 </View>
@@ -47,7 +110,7 @@ const home = () => {
                     <View style={styles.weather_container}>
                       <View style={styles.top_weather_section}>
                         <View>
-                          <Text style={styles.date_text}>Lusaka 10 OCT 2024</Text>
+                          <Text style={styles.date_text}>{location}{", "}{date}</Text>
                           <Text style={{color: 'white', fontSize: 40}}>28 C</Text>
                         </View>
 
