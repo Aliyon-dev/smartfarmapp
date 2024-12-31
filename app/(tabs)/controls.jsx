@@ -1,8 +1,14 @@
 import { View, Text, SafeAreaView, StyleSheet, Image} from 'react-native'
 import React from 'react'
 import { ControlCard } from '../../components/elements/ControlCard'
+import { UserContext } from '../../context/userContext'
+import { useContext } from 'react'
 
 const Controls= () => {
+  const {weatherdata} = useContext(UserContext)
+  const {user} = useContext(UserContext)
+  console.log(user)
+  
   return (
     <SafeAreaView className="bg-grey h-full  p-4">
       <View style={styles.layout}>
@@ -13,12 +19,12 @@ const Controls= () => {
           <View style={styles.innerDetails}>
             {/* left part */}
             <View>
-              <Text>ID: BX0001</Text>
+              <Text>ID: {user.data.box_id.box_id}</Text>
               <View>
-                <Text style={{color: "#5D87FF", fontSize: 36, fontWeight:'medium'}}>28°C </Text>
+                <Text style={{color: "#5D87FF", fontSize: 36, fontWeight:'medium'}}>{weatherdata.temp}</Text>
               </View>
 
-              <Text> feels like 30°C </Text>
+              <Text> feels like {weatherdata.feelslike}</Text>
 
             </View>
 
@@ -32,7 +38,7 @@ const Controls= () => {
 
               <View style={{flexDirection: 'row', alignItems: 'center', gap: 8}}>
                 <Image style={{width:32, height:32}} resizeMode='contain' source={require("../../assets/icons/humidity.png")}/>
-                <Text style={{color: "#5D87FF", fontSize: 36, fontWeight:'medium'}}>28%</Text>
+                <Text style={{color: "#5D87FF", fontSize: 36, fontWeight:'medium'}}>{weatherdata.humidity}</Text>
               </View>
               
               <View style={{justifyContent: 'flex-end'}}>

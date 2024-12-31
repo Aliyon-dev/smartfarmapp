@@ -1,32 +1,80 @@
 import React, { createContext, useEffect, useState } from "react";
-import { login, getUser } from "../hooks/apis";
+import { login, getUser, weather } from "../hooks/apis";
 export const UserContext = createContext(); 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {Alert} from 'react-native'
-import { getWeather } from "../hooks/helperapi";
+import * as Location from 'expo-location'
 
 export const UserContextProvider = ({ children }) =>{
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [location, setLocation] = useState("")
+    const [weatherdata, setWeatherData] = useState({
+        temp: 0,
+        humidity: 0,
+        feelslike: 0,
+        condition: "",
+        description: ""
+    })
 
 
     useEffect(() => {
         // Check for existing login session when the app starts
-        checkWeatherStatus();
         checkLoginStatus();
+        checkWeatherStatus();
     }, []);
+
+    const getLocation = async () => {
+      try{
+        const {status} = await Location.requestForegroundPermissionsAsync();
+        if(status !== 'granted'){
+          console.log("Permission to access location was denied")
+          return
+        }
+
+        const currentLocation = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.High
+        });
+
+
+        const reverseGeocode = await Location.reverseGeocodeAsync({
+            latitude: currentLocation.coords.latitude,
+            longitude: currentLocation.coords.longitude
+        })
+
+        if(reverseGeocode.length > 0){
+            return reverseGeocode[0].city
+        }
+      }
+      catch(error){
+        console.log(error)
+      }
+
+
+    }
 
 
     const checkWeatherStatus =  async () => {
         try{
-            const weather = await getWeather();
+            const my_location = await getLocation();
+            setLocation(my_location);
+            const response = await weather(my_location);
+            setWeatherData({
+                temp: response.data.current.temp,
+                humidity: response.data.current.humidity,
+                feelslike: response.data.current.feelslike,
+                condition: response.data.current.condition,
+                description: response.data.current.description
+            })
         }
         catch(error){
             console.log(error);
         }
         
     }
+
+
     const checkLoginStatus = async () => {
         setIsLoading(true);
         try {
@@ -63,13 +111,17 @@ export const UserContextProvider = ({ children }) =>{
 
     }
 
+    
+
 
 
     return (
-        <UserContext.Provider value={{userLogin, isLoading, isLoggedIn, user, logout}}>
+        <UserContext.Provider value={{userLogin, isLoading, isLoggedIn, user, logout, location, weatherdata}}>
             {children}
         </UserContext.Provider>
     )
 
 
 }
+
+
