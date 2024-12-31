@@ -24,7 +24,7 @@ api.interceptors.request.use(
 
 export const login =  async (email, password)=>{
     try{
-        const response =  await axios.post('https://smartfarmapi.pythonanywhere.com/api/auth/login', {email, password});
+        const response =  await axios.post('http://16.171.23.214:8000/api/auth/login', {email, password});
         const {token, user} = response.data;
 
         //store token
@@ -63,6 +63,18 @@ export const assess_farm = async ()=>{
 export const register =  async (user)=>{
     try{
         const response = await axios.post('https://smartfarmapi.pythonanywhere.com/api/auth/register', {user});
+        return response.data
+    }
+    catch(error){
+        console.log(error)
+        throw(error)
+    }
+}
+
+export const weather = async (location)=>{
+    console.log(location)
+    try{
+        const response = await axios.get(`http://16.171.23.214:8000/api/weather/getweather/${location}`);
         return response.data
     }
     catch(error){

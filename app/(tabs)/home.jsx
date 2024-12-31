@@ -1,23 +1,30 @@
-import { StyleSheet, Text, View, Image, ScrollView, Platform, PermissionsAndroid} from 'react-native'
+import { StyleSheet, Text, View, Image, ScrollView, Platform, PermissionsAndroid, ActivityIndicator} from 'react-native'
 import { useEffect, useState } from 'react'
 import React, { useContext } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Weather } from '../../components/elements/Weather'
 import { SensorCard } from '../../components/elements/sensor_card'
 import { UserContext } from '../../context/userContext'
-import * as Location from 'expo-location'
+import axios from 'axios'
+
 
 const home = () => {
   const [date, setDate] = useState()
   const [greeting, setGreeting] = useState("")
-  const [location, setLocation] = useState("")
+  const {user} =  useContext(UserContext)
+  const {location} = useContext(UserContext)
+  const {weatherdata} = useContext(UserContext)
+  const [isLoading, setIsLoading] =  useState(false)
+  
+  
+
+
 
 
 
   useEffect(() => {
     getDate()
     getGreeting()
-    getLocation()
   }, [])
 
 
@@ -38,39 +45,10 @@ const home = () => {
     setDate(new_date)
   }
 
-  const getLocation = async () => {
-    try{
-      const {status} = await Location.requestForegroundPermissionsAsync();
-      if(status !== 'granted'){
-        console.log("Permission to access location was denied")
-        return
-      }
 
-      const currentLocation = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High
-      });
+  
 
 
-      const reverseGeocode = await Location.reverseGeocodeAsync({
-        latitude: currentLocation.coords.latitude,
-        longitude: currentLocation.coords.longitude
-      })
-
-      if(reverseGeocode.length > 0){
-        setLocation(reverseGeocode[0].city)
-   
-
-      }
-    }
-    catch(error){
-      console.log(error)
-    }
-
-
-  }
-
-  const {user} =  useContext(UserContext)
-  console.log(user.data.first_name)
   return (
     <SafeAreaView style={{height: '100%', padding: 16}}>
       <ScrollView>
@@ -108,28 +86,27 @@ const home = () => {
                         Weather Today
                     </Text>
                     <View style={styles.weather_container}>
-                      <View style={styles.top_weather_section}>
+                      {isLoading? <View style={{flexDirection: "row", alignContent:"center", justifyContent: "center"}}><ActivityIndicator size="large" color="fffff"/></View> :
                         <View>
-                          <Text style={styles.date_text}>{location}{", "}{date}</Text>
-                          <Text style={{color: 'white', fontSize: 40}}>28 C</Text>
-                        </View>
+                          <View style={styles.top_weather_section}>
+                            <View>
+                              <Text style={styles.date_text}>{location}{", "}{date}</Text>
+                              <Text style={{color: 'white', fontSize: 40}}>{weatherdata.temp}</Text>
+                            </View>
 
-                        <View style={styles.clouds}>
-                          <Weather
-                          state="windy"
-                          />
-                        </View>
+                            <View style={styles.clouds}>
+                              <Weather
+                              state={weatherdata.condition}
+                              />
+                            </View>
+                          </View>
 
-                      </View>
-
-                  
-
-                      <View style={styles.bottom_weather_section}>
-                        <View style={{borderBottomColor: 'white', borderBottomWidth: 1, marginVertical: 10}}></View>
-                        <Text style={{fontSize: 12, color: 'white'}}>Today water your plants in the evening</Text>
-
-                      </View>
-
+                          <View style={styles.bottom_weather_section}>
+                            <View style={{borderBottomColor: 'white', borderBottomWidth: 1, marginVertical: 4}}></View>
+                            <Text style={{fontSize: 12, color: 'white'}}>{weatherdata.description}</Text>
+                          </View>
+          
+                        </View> }
 
                     </View>
 
@@ -142,45 +119,51 @@ const home = () => {
                   </Text>
 
                   <View style={styles.sensor_container}>
-                    <SensorCard
-                    title="Box Temp"
-                    value="2°C"
-                    source={require('../../assets/sensor/temp.png')}
-                    />
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%'}}>
+                          <SensorCard
+                          title="Soil Temp"
+                          value="2°C"
+                          source={require('../../assets/sensor/temp.png')}
+                          />
 
-                  <SensorCard
-                    title="pH sensor"
-                    value="10.0"
-                    source={require('../../assets/sensor/ph.png')}
-                  />
+                        <SensorCard
+                          title="Nitrogen"
+                          value="10.0"
+                          source={require('../../assets/sensor/ph.png')}
+                        />
 
-                  <SensorCard
-                    title="water flow"
-                    value="Low"
-                    source={require('../../assets/sensor/flow.png')}
-                  />
-
-                  <SensorCard
-                    title="TDS"
-                    value="78%"
-                    source={require('../../assets/sensor/tds.png')}
-                  />
-
-                    <SensorCard
-                    title="water temp"
-                    value="20°C"
-                    source={require('../../assets/sensor/temp.png')}
-                  />
-
-                  <SensorCard
-                    title="NPK sensor"
-                    value="10.0"
-                    source={require('../../assets/sensor/NPK.png')}
-                  />
+                        <SensorCard
+                          title="Potassium"
+                          value="Low"
+                          source={require('../../assets/sensor/flow.png')}
+                        />
                   </View>
+
+                  <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%'}}>
+                        <SensorCard
+                          title="Phosphorus"
+                          value="78%"
+                          source={require('../../assets/sensor/tds.png')}
+                        />
+
+                          <SensorCard
+                          title="Moisture"
+                          value="20°C"
+                          source={require('../../assets/sensor/temp.png')}
+                        />
+
+                        <SensorCard
+                          title="Humidity"
+                          value="10.0"
+                          source={require('../../assets/sensor/NPK.png')}
+                        />
+                </View>
+
+
+              </View>
                   
                 
-              </View>
+            </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -218,7 +201,7 @@ const styles = StyleSheet.create({
   },
   weather_container:{
     backgroundColor:"#7FA0FF",
-    height: 180,
+    height: 204,
     borderRadius: 21,
     padding: 16,
     flexDirection: 'column',
@@ -250,8 +233,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 21,
     padding: 16,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
     justifyContent: 'space-between',
 
   }
