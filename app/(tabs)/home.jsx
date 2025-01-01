@@ -5,7 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Weather } from '../../components/elements/Weather'
 import { SensorCard } from '../../components/elements/sensor_card'
 import { UserContext } from '../../context/userContext'
-import axios from 'axios'
+import { useWebSocket } from '../../context/WebSocketContext'
+
 
 
 const home = () => {
@@ -15,12 +16,56 @@ const home = () => {
   const {location} = useContext(UserContext)
   const {weatherdata} = useContext(UserContext)
   const [isLoading, setIsLoading] =  useState(false)
-  
-  
+  const [socket, setSocket] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [constate, setConState] = useState("slow")
+  const [boxData, setBoxData] = useState({
+    temp: '',
+    humidity: '',
+    phosphorus: '',
+    nitrogen: '',
+    potassium: '',
+    moisture: ''
+  })
 
+  useEffect(() => {
+    const box = "BX0001"
+    const ws = new WebSocket('ws://16.171.23.214:8000/ws/BX0001/');
+    ws.onopen = (e) => {
+      console.log("connected")
+    }
 
+    ws.onmessage = (e) => {
+      const parse = JSON.parse(e.data)
+      const {data} =  parse
+      const state =  data['state']
 
+      if(state == 'initial'){
+        const {temp, humidity, phosphorus, nitrogen, potassium, moisture} = data['data']['sensors']
+        setBoxData({
+          temp: temp,
+          humidity: 0,
+          phosphorus: phosphorus,
+          nitrogen: nitrogen,
+          potassium: potassium,
+          moisture: moisture
+        })
+      }
+      else if(state=='update'){
+        const [key, value] = Object.entries(data)[1]
+        setBoxData(prev=>({...prev, [key]: value}))
+      }
 
+    }
+
+    ws.onerror = (error) => {
+      console.log(error)
+    }
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
+      setConState("Disconnected")
+    }
+  }, [])
 
   useEffect(() => {
     getDate()
@@ -122,19 +167,19 @@ const home = () => {
                     <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%'}}>
                           <SensorCard
                           title="Soil Temp"
-                          value="2°C"
+                          value={boxData.temp}
                           source={require('../../assets/sensor/temp.png')}
                           />
 
                         <SensorCard
                           title="Nitrogen"
-                          value="10.0"
+                          value={boxData.nitrogen}
                           source={require('../../assets/sensor/ph.png')}
                         />
 
                         <SensorCard
                           title="Potassium"
-                          value="Low"
+                          value={boxData.potassium}
                           source={require('../../assets/sensor/flow.png')}
                         />
                   </View>
@@ -142,19 +187,19 @@ const home = () => {
                   <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%'}}>
                         <SensorCard
                           title="Phosphorus"
-                          value="78%"
+                          value={boxData.phosphorus}
                           source={require('../../assets/sensor/tds.png')}
                         />
 
                           <SensorCard
                           title="Moisture"
-                          value="20°C"
+                          value={boxData.moisture}
                           source={require('../../assets/sensor/temp.png')}
                         />
 
                         <SensorCard
                           title="Humidity"
-                          value="10.0"
+                          value="0"
                           source={require('../../assets/sensor/NPK.png')}
                         />
                 </View>
