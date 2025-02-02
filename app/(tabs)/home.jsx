@@ -21,7 +21,7 @@ const home = () => {
   const [constate, setConState] = useState("slow")
   const [boxData, setBoxData] = useState({
     temp: '',
-    humidity: '',
+    humidity: '65',
     phosphorus: '',
     nitrogen: '',
     potassium: '',
@@ -44,7 +44,7 @@ const home = () => {
         const {temp, humidity, phosphorus, nitrogen, potassium, moisture} = data['data']['sensors']
         setBoxData({
           temp: temp,
-          humidity: 0,
+          humidity: 65,
           phosphorus: phosphorus,
           nitrogen: nitrogen,
           potassium: potassium,
@@ -160,7 +160,7 @@ const home = () => {
               {/* Sensor Section */}
               <View style={styles.sensor_section}>
                   <Text>
-                    Sensor Data
+                    Sensor Data (Virginia Tobacco)
                   </Text>
 
                   <View style={styles.sensor_container}>
@@ -199,7 +199,7 @@ const home = () => {
 
                         <SensorCard
                           title="Humidity"
-                          value="0"
+                          value="65"
                           source={require('../../assets/sensor/NPK.png')}
                         />
                 </View>

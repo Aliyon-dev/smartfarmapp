@@ -1,7 +1,7 @@
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'https://smartfarmapi.pythonanywhere.com/api';
+const API_URL = 'http://16.171.23.214:8000/api';
 
 const api =  axios.create({
     baseURL: API_URL,
@@ -62,7 +62,7 @@ export const assess_farm = async ()=>{
 
 export const register =  async (user)=>{
     try{
-        const response = await axios.post('https://smartfarmapi.pythonanywhere.com/api/auth/register', {user});
+        const response = await axios.post('http://16.171.23.214:8000/api/auth/register', {user});
         return response.data
     }
     catch(error){

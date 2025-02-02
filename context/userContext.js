@@ -96,8 +96,8 @@ export const UserContextProvider = ({ children }) =>{
         try {
             const { token, user } = await login(email, password);
             await AsyncStorage.setItem('userToken', token);
-            setUser(user);
-            setIsLoggedIn(true);
+            const userDetails = await getUser(token);
+            setUser(userDetails);
             return true;
         } catch (error) {
             return false;
@@ -107,6 +107,15 @@ export const UserContextProvider = ({ children }) =>{
     };
 
     const logout = ()=>{
+        try{
+            setIsLoading(true);
+            AsyncStorage.removeItem('userToken');
+            setUser(null);
+            checkLoginStatus();
+        }
+        catch(error){
+            console.log(error)
+        }
 
 
     }

@@ -2,6 +2,7 @@ import { View, Text, Image } from 'react-native';
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
+import "../../global.css";
 
 import home from '../../assets/icons/home.png';
 import home_focused from '../../assets/icons/home-focused.png';

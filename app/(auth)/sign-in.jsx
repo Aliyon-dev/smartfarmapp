@@ -26,15 +26,16 @@ const SignIn = () => {
     const handleLogin = async ()=>{   
       try{
         const success = await userLogin(formData.email, formData.password)
+        console.log(success)
         if(success){
-        router.push("/home", undefined, { shallow: true })
+          router.push("/home", undefined, { shallow: true })
         }
         else{
           Alert.alert("Login Failed",  "Invalid email or password")
         }
       }
       catch(error){
-        Alert.alert(error)
+        Alert.alert("error",error)
         
       }
       finally{
