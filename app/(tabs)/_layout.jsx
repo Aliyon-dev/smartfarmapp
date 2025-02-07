@@ -76,7 +76,7 @@ const TabsLayout = () => {
 
                 {/* Center AI button with cutout */}
                 <Tabs.Screen
-                    name="(farm-ai)"
+                    name="chatbot"
                     options={{
                         headerShown: false,
                         title: '',
@@ -154,8 +154,8 @@ export const styles = StyleSheet.create({
     },
     aiButtonContainer: {
         position: 'absolute',
-        bottom: 10, // To lift the button above the rest of the tab bar
-        width: 64,
+        top:2,
+        width: 56,
         borderRadius: 32,
         justifyContent: 'center',
         alignItems: 'center',
@@ -163,7 +163,7 @@ export const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowOffset: { width: 0, height: 5 },
         shadowRadius: 5,
-        elevation: 5, // For Android elevation
+        elevation: 1, // For Android elevation
     },
     aiButton: {
         width: 64,
@@ -173,7 +173,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
     },
     ai_tbn: {
-        width: 72,
-        height: 72,
+        width: 64,
+        height: 64,
     },
 });
