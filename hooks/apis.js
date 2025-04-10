@@ -1,7 +1,7 @@
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://16.171.23.214:8000/api';
+const API_URL = 'http://13.48.30.229:8001/api';
 
 const api =  axios.create({
     baseURL: API_URL,
@@ -24,7 +24,7 @@ api.interceptors.request.use(
 
 export const login =  async (email, password)=>{
     try{
-        const response =  await axios.post('http://16.171.23.214:8000/api/auth/login', {email, password});
+        const response =  await axios.post('http://13.48.30.229:8001/api/auth/login', {email, password});
         const {token, user} = response.data;
 
         //store token
@@ -62,7 +62,7 @@ export const assess_farm = async ()=>{
 
 export const register =  async (user)=>{
     try{
-        const response = await axios.post('http://16.171.23.214:8000/api/auth/register', {user});
+        const response = await axios.post('http://13.48.30.229:8001/api/auth/register', {user});
         return response.data
     }
     catch(error){
@@ -74,7 +74,7 @@ export const register =  async (user)=>{
 export const weather = async (location)=>{
     console.log(location)
     try{
-        const response = await axios.get(`http://16.171.23.214:8000/api/weather/getweather/${location}`);
+        const response = await axios.get(`http://13.48.30.229:8001/api/weather/getweather/${location}`);
         return response.data
     }
     catch(error){

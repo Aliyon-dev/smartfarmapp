@@ -30,7 +30,7 @@ const home = () => {
 
   useEffect(() => {
     const box = "BX0001"
-    const ws = new WebSocket('ws://16.171.23.214:8000/ws/BX0001/');
+    const ws = new WebSocket(`ws://13.48.30.229:8001/ws/sensor/${box}/`);
     ws.onopen = (e) => {
       console.log("connected")
     }
@@ -39,12 +39,14 @@ const home = () => {
       const parse = JSON.parse(e.data)
       const {data} =  parse
       const state =  data['state']
+      console.log(state)
 
       if(state == 'initial'){
         const {temp, humidity, phosphorus, nitrogen, potassium, moisture} = data['data']['sensors']
+        console.log(data)
         setBoxData({
           temp: temp,
-          humidity: 65,
+          humidity: humidity,
           phosphorus: phosphorus,
           nitrogen: nitrogen,
           potassium: potassium,

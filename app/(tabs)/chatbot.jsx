@@ -29,8 +29,41 @@ const chatbot = () => {
   const flatListRef = useRef(null);
 
   useEffect(() => {
+    const token = getToken();
+    console.log(typeof(token));
+    if(!token){
+      return
+    }
+    const ws = new WebSocket(`ws://13.48.30.229:8001/ws/chatbot/?token=${JSON.stringify(token)}`);
+    ws.onopen = () => {
+      console.log('WebSocket connection opened');
+    };
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+    
+
   }, []);
 
+  const getToken =  async () =>{
+    const token = await AsyncStorage.getItem('userToken');
+    console.log("this is the :",token);
+    return JSON.stringify(token);
+  }
+
+  const StartSocket =  async () =>{
+    try{
+      const ws = new WebSocket(`ws://13.`)
+    }
+    catch(error){
+      console.log("error")
+    }
+    finally{
+      console.log("finally")
+    }
+  }
+
+  
   const loadMessages = async () => {
     try {
       const savedMessages = await AsyncStorage.getItem('chatMessages');
