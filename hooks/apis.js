@@ -71,9 +71,19 @@ export const register =  async (user)=>{
     }
 }
 
+/**
+ * The function `weather` is an asynchronous function that fetches weather data for a specific location
+ * using an API endpoint.
+ * @param location - The `weather` function is an asynchronous function that takes a `location`
+ * parameter. This function makes a GET request to a weather API endpoint with the provided `location`
+ * to fetch weather data. If the request is successful, it returns the weather data. If there is an
+ * error during the request,
+ * @returns The `weather` function is returning the data received from the API call to
+ * `http://13.48.30.229:8001/api/weather/getweather/`.
+ */
 export const weather = async (location)=>{
-    console.log(location)
     try{
+        
         const response = await axios.get(`http://13.48.30.229:8001/api/weather/getweather/${location}`);
         return response.data
     }

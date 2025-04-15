@@ -95,13 +95,13 @@ const TabsLayout = () => {
                 />
 
                 <Tabs.Screen
-                    name="readings"
+                    name="fields"
                     options={{
                         headerShown: false,
-                        title: 'Readings',
+                        title: 'Fields',
                         tabBarIcon: ({ color, focused }) => (
                             <TabIcon
-                                name="Readings"
+                                name="Fields"
                                 icon={focused ? readings_focused : readings}
                                 color={color}
                             />

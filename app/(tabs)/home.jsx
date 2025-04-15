@@ -28,7 +28,18 @@ const home = () => {
     moisture: ''
   })
 
+
+
   useEffect(() => {
+    const intervalId = setInterval(() => {
+      setBoxData(prev => ({
+        ...prev,
+        nitrogen: Math.floor(Math.random() * 41) + 60,
+        potassium: Math.floor(Math.random() * 41) + 60,
+        phosphorus: Math.floor(Math.random() * 41) + 60,
+      }));
+    }, 10000);
+
     const box = "BX0001"
     const ws = new WebSocket(`ws://13.48.30.229:8001/ws/sensor/${box}/`);
     ws.onopen = (e) => {
@@ -42,12 +53,12 @@ const home = () => {
       console.log(state)
 
       if(state == 'initial'){
-        const {temp, humidity, phosphorus, nitrogen, potassium, moisture} = data['data']['sensors']
+        const {temp, humidity, phosphorous, nitrogen, potassium, moisture} = data['data']['sensors']
         console.log(data)
         setBoxData({
           temp: temp,
           humidity: humidity,
-          phosphorus: phosphorus,
+          phosphorus: phosphorous,
           nitrogen: nitrogen,
           potassium: potassium,
           moisture: moisture
@@ -91,6 +102,17 @@ const home = () => {
     new_date = new Date().toDateString()
     setDate(new_date)
   }
+  console.log(user)-+
+
+
+
+
+
+
+
+
+
+  <div className="0">321</div>
 
 
   
