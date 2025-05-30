@@ -6,46 +6,74 @@ import { Weather } from '../../components/elements/Weather'
 import { SensorCard } from '../../components/elements/sensor_card'
 import { UserContext } from '../../context/userContext'
 import { useWebSocket } from '../../context/WebSocketContext'
+import { Picker } from '@react-native-picker/picker';
 
 
 
 const home = () => {
+  const {fields} = useContext(UserContext)
+  const [hasField, setHasField] = useState(false);
   const [date, setDate] = useState()
   const [greeting, setGreeting] = useState("")
-  const {user} =  useContext(UserContext)
+  const {user, refetch} =  useContext(UserContext)
   const {location} = useContext(UserContext)
   const {weatherdata} = useContext(UserContext)
   const [isLoading, setIsLoading] =  useState(false)
   const [socket, setSocket] = useState(null)
   const [messages, setMessages] = useState([])
   const [constate, setConState] = useState("slow")
+  const [retryCount, setRetryCount] = useState(0)
+  const  maxRetries = 5
   const [boxData, setBoxData] = useState({
     temp: '',
-    humidity: '',
+    humidity: '65',
     phosphorus: '',
     nitrogen: '',
     potassium: '',
     moisture: ''
   })
 
-  useEffect(() => {
-    const box = "BX0001"
-    const ws = new WebSocket('ws://16.171.23.214:8000/ws/BX0001/');
-    ws.onopen = (e) => {
-      console.log("connected")
-    }
+  const [activeField, setActiveField] = useState(null)
 
+  useEffect(()=>{
+      refetch();
+  }, [refetch])
+
+  useEffect (()=>{
+    setHasField(fields.length>0)
+    if(fields[0])setActiveField(fields[0])
+  }, [fields])
+
+
+  useEffect(()=>{
+    if (retryCount > maxRetries) {
+      console.error('Max retries reached. Stopping reconnection attempts.');
+      return;
+    }
+    
+    if(!activeField){
+      return 
+    }
+    //const box = activeField.box.box_id
+    const box = "BX0001" 
+    //console.log("Box ID", activeField)
+    const ws =  new WebSocket(`wss://api.techiqsmart.farm/ws/sensor/${box}/`);
+    ws.onopen = (e)=>{
+      console.log("Connected")
+      setRetryCount(0)
+    }
     ws.onmessage = (e) => {
       const parse = JSON.parse(e.data)
       const {data} =  parse
       const state =  data['state']
 
       if(state == 'initial'){
-        const {temp, humidity, phosphorus, nitrogen, potassium, moisture} = data['data']['sensors']
+        const {temp, humidity, phosphorous, nitrogen, potassium, moisture} = data['data']['sensors']
+
         setBoxData({
           temp: temp,
-          humidity: 0,
-          phosphorus: phosphorus,
+          humidity: humidity,
+          phosphorus: phosphorous,
           nitrogen: nitrogen,
           potassium: potassium,
           moisture: moisture
@@ -59,13 +87,18 @@ const home = () => {
     }
 
     ws.onerror = (error) => {
-      console.log(error)
+      console.error("WebSocket error:", error);
+
     }
     ws.onclose = () => {
-      console.log('WebSocket connection closed');
       setConState("Disconnected")
+      setTimeout(()=>{
+        setRetryCount((prev)=> prev + 1)
+      }, 2000*(retryCount + 1))
     }
-  }, [])
+
+  },[activeField])
+
 
   useEffect(() => {
     getDate()
@@ -84,11 +117,83 @@ const home = () => {
       setGreeting("Good Evening")
     }
   }
+
+  const myfield =  fields.map(fields => fields.field_name)
+
+
+
+  const renderFields  = () => (
+    <View>
+          <Picker
+            selectedValue={activeField?.field_name}
+            onValueChange={(itemValue, itemIndex) => {
+              const selectedField = fields.find(field => field.field_name === itemValue);
+              setActiveField(selectedField);
+            }}
+          >
+            {fields.map((field, index) => (
+              <Picker.Item label={field.field_name} value={field.field_name} key={index} />
+            ))}
+          </Picker>
+      <View style={styles.sensor_container}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%'}}>
+              <SensorCard
+              title="Soil Temp"
+              value={boxData.temp}
+              source={require('../../assets/sensor/temp.png')}
+              />
+
+            <SensorCard
+              title="Nitrogen"
+              value={boxData.nitrogen}
+              source={require('../../assets/sensor/ph.png')}
+            />
+
+            <SensorCard
+              title="Potassium"
+              value={boxData.potassium}
+              source={require('../../assets/sensor/flow.png')}
+            />
+      </View>
+
+      <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%'}}>
+            <SensorCard
+              title="Phosphorus"
+              value={boxData.phosphorus}
+              source={require('../../assets/sensor/tds.png')}
+            />
+
+              <SensorCard
+              title="Moisture"
+              value={boxData.moisture}
+              source={require('../../assets/sensor/temp.png')}
+            />
+
+            <SensorCard
+              title="Humidity"
+              value="65"
+              source={require('../../assets/sensor/NPK.png')}
+            />
+      </View>
+</View>
+</View>
+  )
   
   const getDate = () => {
     new_date = new Date().toDateString()
     setDate(new_date)
   }
+
+
+
+
+
+
+
+
+
+
+  <div className="0">321</div>
 
 
   
@@ -159,55 +264,18 @@ const home = () => {
 
               {/* Sensor Section */}
               <View style={styles.sensor_section}>
-                  <Text>
-                    Sensor Data
-                  </Text>
+                {hasField? <View>{renderFields()}</View>
 
-                  <View style={styles.sensor_container}>
-                    <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%'}}>
-                          <SensorCard
-                          title="Soil Temp"
-                          value={boxData.temp}
-                          source={require('../../assets/sensor/temp.png')}
-                          />
-
-                        <SensorCard
-                          title="Nitrogen"
-                          value={boxData.nitrogen}
-                          source={require('../../assets/sensor/ph.png')}
-                        />
-
-                        <SensorCard
-                          title="Potassium"
-                          value={boxData.potassium}
-                          source={require('../../assets/sensor/flow.png')}
-                        />
-                  </View>
-
-                  <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%'}}>
-                        <SensorCard
-                          title="Phosphorus"
-                          value={boxData.phosphorus}
-                          source={require('../../assets/sensor/tds.png')}
-                        />
-
-                          <SensorCard
-                          title="Moisture"
-                          value={boxData.moisture}
-                          source={require('../../assets/sensor/temp.png')}
-                        />
-
-                        <SensorCard
-                          title="Humidity"
-                          value="0"
-                          source={require('../../assets/sensor/NPK.png')}
-                        />
-                </View>
-
-
+              
+              : 
+              
+              <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                  <Image  resizeMethod="contain" style={{width: 200, height: 200}} source={require("../../assets/images/empty.png")}></Image>
+                  <Text style={{fontSize: 18, fontWeight: 'bold', color: '#666666', marginBottom: 12}}>No field set up</Text>
+                  <Text style={{fontSize: 14, color: "#999999"}}>Go to fields and setup one to read box data </Text>
               </View>
-                  
                 
+                }
             </View>
         </View>
       </ScrollView>

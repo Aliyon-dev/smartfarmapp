@@ -35,7 +35,7 @@ export const Button =  ({title, type ='primary', source, onPress=()=>{}, loading
             onPress()
         }}
         style={BtnStyle()}>
-            {source && <Image source={source} style={styles.icon}/>}
+            {source && <Image source={source} style={{width: 24, height: 24}}/>}
 
             {loading?(
                 <ActivityIndicator size="small" color="#0000ff" />

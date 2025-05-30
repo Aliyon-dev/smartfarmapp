@@ -26,15 +26,17 @@ const SignIn = () => {
     const handleLogin = async ()=>{   
       try{
         const success = await userLogin(formData.email, formData.password)
+        console.log(success)
         if(success){
-        router.push("/home", undefined, { shallow: true })
+          router.push("/home", undefined, { shallow: true })
         }
         else{
+          console.log('error')
           Alert.alert("Login Failed",  "Invalid email or password")
         }
       }
       catch(error){
-        Alert.alert(error)
+        Alert.alert("error",error)
         
       }
       finally{
@@ -77,7 +79,7 @@ const SignIn = () => {
       <ScrollView>
         <View style={styles.container}>
             <View style={styles.flex}>
-                <Image source={require('../../assets/logo.jpg')}/>
+                <Image style={{width:200, height: 200}} source={require('../../assets/logo.png')}/>
                 <Text style={{
                     fontSize: 20,
                     fontWeight: '800',

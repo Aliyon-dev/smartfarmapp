@@ -19,12 +19,12 @@ const Controls= () => {
           <View style={styles.innerDetails}>
             {/* left part */}
             <View>
-              <Text>ID: {user.data.box_id.box_id}</Text>
+              <Text>ID:</Text>
               <View>
                 <Text style={{color: "#5D87FF", fontSize: 36, fontWeight:'medium'}}>{weatherdata.temp}</Text>
               </View>
 
-              <Text> feels like {weatherdata.feelslike}</Text>
+              <Text> feels like {parseInt(weatherdata.feelslike)}</Text>
 
             </View>
 

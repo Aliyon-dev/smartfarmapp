@@ -10,6 +10,7 @@ import { CenteredModal } from '../../components/elements/success'
 import {Link} from 'expo-linking'
 import { StyleSheet } from 'react-native'
 import { router } from 'expo-router'
+import { register } from '../../hooks/apis'
 
 const SignUp = () =>{
     const [formData, setFormData] = useState({
@@ -55,17 +56,15 @@ const SignUp = () =>{
     const submitForm = async ()=>{
         setIsLoading(true)
         try{
-            axios.post('https://smartfarmapi.pythonanywhere.com/api/auth/register', formData)
-            .then(response=>{
-                console.log(response.status)
+            const response =  await register(formData);
+            console.log(response.data)
+            if(response.status === 200){
                 setModalVisible(true)
-            })
-            .catch(error=>{
-                Alert.alert("alert", error.reponse.data.message)
-                console.log(error.response)
-            })
+            }
+
         }
         catch(error){
+
 
         }
         finally{
@@ -104,29 +103,15 @@ const validate = ()=>{
             if(!formData.box_id || formData.box_id.length < 6){
                 handleError('Box ID must be 6 character long', 'box_id')
                 }
-
-            else if(formData.box_id &&  formData.box_id.length >=6 && formData.password.length > 6){
-                setIsLoading(true)
-                console.log(formData.box_id)
-                axios.get(`https://smartfarmapi.pythonanywhere.com/api/auth/get-box/${formData.box_id}`)
-                .then(response =>{
-                    data = response.data
-                    setIsLoading(false)
-                    if(data.data.isTaken == true){
-
-                        handleError(`box with id ${formData.box_id} is taken`, 'box_id')
-                    }
-                    else{
-                        handleNextStep()
-                    }
-                })
-                .catch(error=>{
-                    console.log('this is the error:', error)
-                    valid = false
-                    setIsLoading(false)
-                    handleError(error)
-                })
+            
+              if(!formData.email){
+                handleError('please enter email', 'email')
+                return
+            }else if(!formData.email.match(/\S+@\S+\.\S+/)){
+                handleError('please enter a valid email', 'email')
+                return
             }
+            handleNextStep()
 
         case 2:
             if(!formData.first_name){
@@ -137,14 +122,6 @@ const validate = ()=>{
             if(!formData.last_name){
                 handleError('please enter your last name', 'last_name')
                 return 
-            }
-
-            if(!formData.email){
-                handleError('please enter email', 'email')
-                return
-            }else if(!formData.email.match(/\S+@\S+\.\S+/)){
-                handleError('please enter a valid email', 'email')
-                return
             }
             handleNextStep()
 
@@ -196,14 +173,14 @@ const renderStep = () =>{
                     <SafeAreaView style={{gap:24, backgroundColor: "#ffffff"}}>
                         <View style={{gap: 28}}>
                             <Input 
-                                label="Box ID" 
-                                iconName="barcode"  
-                                placeholder="Enter your Box ID"
-                                onChangeText = {(text)=>handleInput('box_id', text)}
-                                value={formData.box_id}
-                                error = {errors.box_id}
+                                label="Email" 
+                                iconName="email"  
+                                placeholder="Enter your Email"
+                                onChangeText = {(text)=>handleInput('email', text)}
+                                value={formData.email}
+                                error = {errors.email}
                                 onFocus={()=>{
-                                    handleError(null, 'box_id')
+                                    handleError(null, 'email')
                                 }}
        
                             />
@@ -289,14 +266,14 @@ const renderStep = () =>{
                             />  
                             <Input
                                 password={false}
-                                label="Email"
-                                iconName="email"
-                                placeholder="Enter your email"
-                                onChangeText={(text) => handleInput('email', text)}
-                                value={formData.email}
-                                error = {errors.email}
+                                label="Phone number"
+                                iconName="phone"
+                                placeholder="Enter your phone"
+                                onChangeText={(text) => handleInput('phone', text)}
+                                value={formData.phone}
+                                error = {errors.phone}
                                 onFocus={()=>{
-                                    handleError(null, 'email')
+                                    handleError(null, 'phone')
                                 }}
                             />  
                     
@@ -322,20 +299,7 @@ const renderStep = () =>{
             case 3:
                 return(            
                 <SafeAreaView style={{gap:40}}>
-                    <View style={{gap: 28}}>
-                            <Input
-                                password={false}
-                                label="phone number"
-                                iconName="phone"
-                                placeholder="Enter your phone number"
-                                onChangeText={(text) => handleInput('phone', text)}
-                                value={formData.phone}
-                                error = {errors.phone}
-                                onFocus={()=>{
-                                    handleError(null, 'phone')
-                                }}
-                            />  
-
+                    <View style={{gap: 28}}> 
                             <Input
                                 password={false}
                                 label="Country"
@@ -394,7 +358,7 @@ const renderStep = () =>{
 
             />
             <View style={styles.flex}>
-                <Image source={require('../../assets/logo.jpg')}/>
+                <Image style={{width:200, height: 200}} source={require('../../assets/logo.png')}/>
                 <Text style={{
                     fontSize: 20,
                     fontWeight: '800',

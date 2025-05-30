@@ -2,6 +2,7 @@ import { View, Text, Image } from 'react-native';
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
+import "../../global.css";
 
 import home from '../../assets/icons/home.png';
 import home_focused from '../../assets/icons/home-focused.png';
@@ -75,7 +76,7 @@ const TabsLayout = () => {
 
                 {/* Center AI button with cutout */}
                 <Tabs.Screen
-                    name="(farm-ai)"
+                    name="chatbot"
                     options={{
                         headerShown: false,
                         title: '',
@@ -94,13 +95,13 @@ const TabsLayout = () => {
                 />
 
                 <Tabs.Screen
-                    name="readings"
+                    name="fields"
                     options={{
                         headerShown: false,
-                        title: 'Readings',
+                        title: 'Fields',
                         tabBarIcon: ({ color, focused }) => (
                             <TabIcon
-                                name="Readings"
+                                name="Fields"
                                 icon={focused ? readings_focused : readings}
                                 color={color}
                             />
@@ -153,8 +154,8 @@ export const styles = StyleSheet.create({
     },
     aiButtonContainer: {
         position: 'absolute',
-        bottom: 10, // To lift the button above the rest of the tab bar
-        width: 64,
+        top:2,
+        width: 56,
         borderRadius: 32,
         justifyContent: 'center',
         alignItems: 'center',
@@ -162,7 +163,7 @@ export const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowOffset: { width: 0, height: 5 },
         shadowRadius: 5,
-        elevation: 5, // For Android elevation
+        elevation: 1, // For Android elevation
     },
     aiButton: {
         width: 64,
@@ -172,7 +173,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
     },
     ai_tbn: {
-        width: 72,
-        height: 72,
+        width: 64,
+        height: 64,
     },
 });

@@ -3,6 +3,7 @@ import React from 'react'
 import {Slot, Stack} from 'expo-router'
 import { GlobalProvider } from '../context/GlobalProvider'
 import { UserContextProvider } from '../context/userContext'
+import "../global.css";
 
 const RootLayout = () => {
   return (
