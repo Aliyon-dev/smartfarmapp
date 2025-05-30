@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useContext} from "react"
+import { Pressable } from "react-native"
 import {
   View,
   Text,
@@ -13,33 +14,39 @@ import {
   Easing,
 } from "react-native"
 import { UserContext } from "../../context/userContext"
+import { createField, getCrops, verifyBox } from "../../hooks/apis"
+import { useRouter } from "expo-router"
 
-const STORAGE_KEY = "farming_fields_data"
-const API_URL = "https://your-backend-api.com/fields" // Replace with your actual API endpoint
 
-const Fields = () => {
+const Fields = () => {  
+
+  const {crops} =  useContext(UserContext)
   const {user} = useContext(UserContext)
-  const [fields, setFields] = useState([])
+  const {fields, refetch} = useContext(UserContext)
   const [loading, setLoading] = useState(true)
   const [modalVisible, setModalVisible] = useState(false)
   const [newField, setNewField] = useState({
-    name: "",
-    boxId: "",
-    cropType: "",
+    field_name: "",
+    box_id: "",
   })
   const [selectedCropType, setSelectedCropType] = useState(null)
   const [showCropTypeOptions, setShowCropTypeOptions] = useState(false)
+  const cropNames =  crops.map(crop => crop.crop_name)
+  const router = useRouter();
+
 
   // Custom alert state
   const [alertVisible, setAlertVisible] = useState(false)
   const [alertMessage, setAlertMessage] = useState("")
   const [alertTitle, setAlertTitle] = useState("")
+  const [errors, setErrors] = useState({})
 
   // Animation for custom spinner
   const spinValue = new Animated.Value(0)
 
   // Start spinner animation
   useEffect(() => {
+    //getCropTypes();
     if (loading) {
       Animated.loop(
         Animated.timing(spinValue, {
@@ -60,7 +67,6 @@ const Fields = () => {
     outputRange: ["0deg", "360deg"],
   })
 
-  const cropTypes = ["Avocado", "Tobacco", "Maize", "Wheat", "Coffee", "Other"]
 
   // Custom alert function
   const showAlert = (title, message) => {
@@ -69,141 +75,75 @@ const Fields = () => {
     setAlertVisible(true)
   }
 
-  // Local storage functions using vanilla JavaScript
-  const storeData = async (key, value) => {
-    try {
-      const jsonValue = JSON.stringify(value)
-      localStorage.setItem(key, jsonValue)
-      return true
-    } catch (e) {
-      //console.error("Error storing data:", e)
-      return false
-    }
-  }
-
-  const getData = async (key) => {
-    try {
-      const jsonValue = localStorage.getItem(key)
-      return jsonValue != null ? JSON.parse(jsonValue) : null
-    } catch (e) {
-      //console.error("Error getting data:", e)
-      return null
-    }
-  }
-
   // Fetch fields data from API or local storage
   useEffect(() => {
-    const fetchFields = async () => {
-      try {
-        // Try to get data from local storage first
-        const storedData = await getData(STORAGE_KEY)
+    setTimeout(() => {
+      setLoading(false)
+    }, 2000) // Simulate API call delay
 
-        if (storedData) {
-          const lastFetchTime = storedData.timestamp
-          const currentTime = new Date().getTime()
-
-          // If data is less than 1 hour old, use it
-          if (currentTime - lastFetchTime < 3600000) {
-            setFields(storedData.fields)
-            setLoading(false)
-            return
-          }
-        }
-
-        // If no valid cached data, fetch from API
-        fetch(API_URL)
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Network response was not ok")
-            }
-            return response.json()
-          })
-          .then((data) => {
-            // Save to local storage with timestamp
-            const storageData = {
-              fields: data,
-              timestamp: new Date().getTime(),
-            }
-
-            storeData(STORAGE_KEY, storageData)
-            setFields(data)
-          })
-          .catch((error) => {
-            //console.error("Error fetching fields:", error)
-            showAlert("Error", "Failed to load fields. Please try again later.")
-          })
-          .finally(() => {
-            setLoading(false)
-          })
-      } catch (error) {
-        //console.error("Error in fetchFields:", error)
-        showAlert("Error", "Failed to load fields. Please try again later.")
-        setLoading(false)
-      }
-    }
-
-    fetchFields()
   }, [])
+
+
+  const verifybox_id = async (box_id) => {
+      console.log(box_id)
+      const regex = /^BX\d{4}$/;
+      if (!regex.test(box_id)) {
+        showAlert("Error", "Invalid Box ID format. It should be in the format 'BX0000'.")
+      }
+      // check if a box is not connected to another field
+      const response = await verifyBox(box_id)
+      console.log(response)
+      if(response.status === "success"){
+        return true
+      }
+      else{
+        showAlert("Error", "Box ID is already in use")
+
+      }
+
+  }
+
 
   const addField = () => {
     // Validate form
-    if (!newField.name.trim() || !newField.boxId.trim() || !newField.cropType) {
+    if (!newField.field_name.trim() || !newField.box_id.trim()) {
       showAlert("Error", "Please fill in all fields")
       return
     }
-
+    if(!verifybox_id(newField.box_id)){
+      return
+    }
+ 
     setLoading(true)
 
     // Create new field object
     const fieldToAdd = {
-      name: newField.name.trim(),
-      boxId: newField.boxId.trim(),
-      cropType: newField.cropType,
+      field_name: newField.field_name.trim(),
+      box_id: newField.box_id,
     }
-
+  
     // Send to API
-    fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(fieldToAdd),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to add field")
-        }
-        return response.json()
-      })
-      .then((addedField) => {
-        // Update local state
-        const updatedFields = [...fields, addedField]
-        setFields(updatedFields)
+    createFieldApi(newField)
 
-        // Update local storage
-        const storageData = {
-          fields: updatedFields,
-          timestamp: new Date().getTime(),
-        }
+  }
 
-        storeData(STORAGE_KEY, storageData)
-
-        // Reset form and close modal
-        setNewField({
-          name: "",
-          boxId: "",
-          cropType: "",
-        })
-        setSelectedCropType(null)
-        setModalVisible(false)
-      })
-      .catch((error) => {
-        console.error("Error adding field:", error)
-        showAlert("Error", "Failed to add field. Please try again.")
-      })
-      .finally(() => {
-        setLoading(false)
-      })
+  const createFieldApi = async (field) => {
+    try{
+      const response = await createField(field)
+      refetch();
+      showAlert("Success", response.message)
+      
+    }
+    catch(error){
+      console.log("this is the error", error.response.data)
+      showAlert("Error", error.response.data.message)
+    }
+    finally{
+      setLoading(false)
+      setModalVisible(false)
+      setNewField({ field_name: "", box_id: "", cropType: "" })
+      setSelectedCropType(null)
+    }
   }
 
   const selectCropType = (type) => {
@@ -212,22 +152,27 @@ const Fields = () => {
     setShowCropTypeOptions(false)
   }
 
-  const renderFieldItem = ({ item }) => (
-    <View style={styles.fieldItem}>
-      <View style={styles.fieldHeader}>
-        <Text style={styles.fieldName}>{item.name}</Text>
-        <View style={[styles.cropTypeBadge, getCropTypeColor(item.cropType)]}>
-          <Text style={styles.cropTypeText}>{item.cropType}</Text>
-        </View>
+const renderFieldItem = ({ item }) => (
+  <Pressable
+    onPress={() => router.push(`/field-details/${item.id}`)}
+    style={styles.fieldItem}
+  >
+    <View style={styles.fieldHeader}>
+      <Text style={styles.fieldName}>{item.field_name}</Text>
+      <View style={[styles.cropTypeBadge, getCropTypeColor(item.field_name)]}>
+        <Text style={styles.cropTypeText}>{item.field_name}</Text>
       </View>
-      <Text style={styles.fieldDetail}>Box ID: {item.boxId}</Text>
-      <Text style={styles.fieldDetail}>Added: {new Date(item.createdAt).toLocaleDateString()}</Text>
     </View>
-  )
+    <Text style={styles.fieldDetail}>Box ID: {item.box.box_id}</Text>
+    <Text style={styles.fieldDetail}>
+      Added: {new Date(item.createdAt).toLocaleDateString()}
+    </Text>
+  </Pressable>
+);
 
   const getCropTypeColor = (cropType) => {
     switch (cropType) {
-      case "Avocado":
+      case "Avocado Field":
         return { backgroundColor: "#4CAF50" } // Green
       case "Tobacco":
         return { backgroundColor: "#795548" } // Brown
@@ -241,6 +186,8 @@ const Fields = () => {
         return { backgroundColor: "#9E9E9E" } // Grey
     }
   }
+
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -271,6 +218,7 @@ const Fields = () => {
         </View>
       ) : (
         <FlatList
+          onPress
           data={fields}
           renderItem={renderFieldItem}
           keyExtractor={(item) => item.id}
@@ -294,8 +242,8 @@ const Fields = () => {
               <TextInput
                 style={styles.input}
                 placeholder="Enter field name"
-                value={newField.name}
-                onChangeText={(text) => setNewField({ ...newField, name: text })}
+                value={newField.field_name}
+                onChangeText={(text) => setNewField({ ...newField, field_name: text })}
               />
             </View>
 
@@ -304,12 +252,12 @@ const Fields = () => {
               <TextInput
                 style={styles.input}
                 placeholder="Enter box ID"
-                value={newField.boxId}
-                onChangeText={(text) => setNewField({ ...newField, boxId: text })}
+                value={newField.box_id}
+                onChangeText={(text) => setNewField({ ...newField, box_id: text })}
               />
             </View>
 
-            <View style={styles.inputGroup}>
+            {/* <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Crop Type</Text>
               <TouchableOpacity
                 style={styles.dropdownButton}
@@ -322,21 +270,21 @@ const Fields = () => {
 
               {showCropTypeOptions && (
                 <View style={styles.dropdownOptions}>
-                  {cropTypes.map((type) => (
+                  {cropNames.map((type) => (
                     <TouchableOpacity key={type} style={styles.dropdownOption} onPress={() => selectCropType(type)}>
                       <Text style={styles.dropdownOptionText}>{type}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
               )}
-            </View>
+            </View>  */}
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => {
                   setModalVisible(false)
-                  setNewField({ name: "", boxId: "", cropType: "" })
+                  setNewField({ field_name: "", box_id: ""})
                   setSelectedCropType(null)
                 }}
               >

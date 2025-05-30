@@ -18,25 +18,32 @@ import {
   Animated,
 } from "react-native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { useContext } from "react"
+import { UserContext } from "../../context/userContext"
+//import { useRef } from "react"
 
 const { width } = Dimensions.get("window")
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
+
 const Chatbot = () => {
+  const {userToken} =  useContext(UserContext);
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [inputHeight, setInputHeight] = useState(40)
   const flatListRef = useRef(null)
-  const [token, setToken] = useState(null)
   const [isTyping, setIsTyping] = useState(false)
   const fadeAnim = useRef(new Animated.Value(0)).current
   const scrollY = useRef(new Animated.Value(0)).current
+  const wsRef =  useRef(null)
+  const [status, setStatus] =  useState("connecting")
+  
 
   // Sample initial messages
   useEffect(() => {
-    loadMessages()
-
+    clearChat()
+    //loadMessages()
     // If no saved messages, add a welcome message
     setTimeout(() => {
       if (messages.length === 0) {
@@ -47,7 +54,7 @@ const Chatbot = () => {
           timestamp: new Date().toISOString(),
         }
         setMessages([welcomeMessage])
-        saveMessages([welcomeMessage])
+        //saveMessages([welcomeMessage])
       }
     }, 500)
 
@@ -59,10 +66,44 @@ const Chatbot = () => {
   }, [])
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://13.48.30.229:8001/ws/chatbot/?token=46ce322920e44d1a583badfd6eb2b6b45edb3df8`)
+    //console.log(userToken)
+    //const ws = new WebSocket(`ws://13.48.30.229:8001/ws/chatbot/?token=46ce322920e44d1a583badfd6eb2b6b45edb3df8`)
+    const ws = new WebSocket(`wss://api.techiqsmart.farm/ws/chatbot/?token=${userToken}`)
+    wsRef.current =  ws
     ws.onopen = () => {
+      setStatus("connected")
       console.log("WebSocket connection opened")
     }
+
+  
+
+    ws.onmessage = (e) => {
+      try{
+        const data = JSON.parse(e.data)
+        const { message } = data
+        if ( (message) &&  message === "connected") {
+          clearChat()
+        }
+        else{
+          const aiMessage = {
+            id: Date.now().toString(),
+            content: message,
+            role: "assistant",
+            timestamp: new Date().toISOString(),
+          }
+          setMessages((prevMessages) => [...prevMessages, aiMessage])
+          setIsLoading(false);
+          setIsTyping(false);
+          flatListRef.current?.scrollToEnd({ animated: true })
+          ///saveMessages((prevMessages) => [...prevMessages, aiMessage])
+        }
+      }
+      catch(error){
+        console.log("Error parsing message:", error)
+      }
+
+    }
+
     ws.onclose = () => {
       console.log("WebSocket connection closed")
     }
@@ -103,6 +144,7 @@ const Chatbot = () => {
 
     Vibration.vibrate(10) // Haptic feedback
     Keyboard.dismiss()
+    const api_message = {"message": input}
 
     const userMessage = {
       id: Date.now().toString(),
@@ -118,8 +160,9 @@ const Chatbot = () => {
     setInputHeight(40) // Reset input height
     setIsLoading(true)
     setIsTyping(true)
+    wsRef.current.send(JSON.stringify(api_message))
 
-    try {
+    /* try {
       // Simulate AI response - Replace with actual API call
       setTimeout(() => {
         setIsTyping(false)
@@ -133,12 +176,13 @@ const Chatbot = () => {
         setMessages(updatedMessages)
         saveMessages(updatedMessages)
         setIsLoading(false)
-      }, 2000)
+      }, 2000) 
     } catch (error) {
       console.error("Error sending message:", error)
       setIsLoading(false)
       setIsTyping(false)
     }
+    */
   }
 
   const formatTimestamp = (timestamp) => {
@@ -174,11 +218,7 @@ const Chatbot = () => {
           isLastMessage && { opacity: fadeAnim },
         ]}
       >
-        {item.role === "assistant" && (
-          <View style={styles.avatarContainer}>
-            <Image style={styles.avatar} source={require("../../assets/icons/terra.png")} />
-          </View>
-        )}
+
         <View
           style={[styles.messageContent, item.role === "user" ? styles.userMessageContent : styles.aiMessageContent]}
         >
@@ -241,7 +281,7 @@ const Chatbot = () => {
               <Text style={styles.headerTitle}>Terra Bot</Text>
               <View style={styles.statusContainer}>
                 <View style={styles.statusDot}></View>
-                <Text style={styles.statusText}>Ready to Assist</Text>
+                <Text style={styles.statusText}>{status}</Text>
               </View>
             </View>
           </View>
@@ -255,18 +295,22 @@ const Chatbot = () => {
           ref={flatListRef}
           data={messages}
           renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
-          style={styles.messageList}
+          keyExtractor={item => item.id}
           contentContainerStyle={styles.messageListContent}
+          // Unmount off-screen rows to save memory
+          removeClippedSubviews={true}
+          // Ensure smooth scroll events
+          scrollEventThrottle={16}
+          // Initial items to render
+          initialNumToRender={20}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          // Keep the bottom item visible when new content is added
+          maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+          // Snap to bottom on size/layout changes
           onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
           onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
-          showsVerticalScrollIndicator={false}
-          initialNumToRender={15}
-          maxToRenderPerBatch={10}
-          windowSize={10}
-          ListEmptyComponent={renderEmptyChat}
           ListFooterComponent={renderTypingIndicator}
-          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
         />
 
         <Animated.View
@@ -391,7 +435,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f9fa",
   },
   messageListContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingTop: 16,
     paddingBottom: 8,
   },
@@ -405,8 +449,8 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   avatar: {
-    height: 32,
-    width: 32,
+    height: 24,
+    width: 24,
     borderRadius: 16,
   },
   messageContent: {
@@ -436,12 +480,12 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
       },
       android: {
-        elevation: 2,
+        elevation: 1,
       },
     }),
   },
   messageText: {
-    fontSize: 16,
+    fontSize: 14,
     lineHeight: 22,
   },
   userMessageText: {

@@ -1,21 +1,21 @@
 "use client"
 
 import { useState, useEffect, useContext } from "react"
-import { UserContext } from "../../context/userContext"
+import { UserContext, UserContextProvider } from "../../context/userContext"
 import { View, Text, SafeAreaView, TouchableOpacity, StyleSheet, Switch, ScrollView } from "react-native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { ConfirmLogoutModal } from "../../components/elements/ConfirmLogoutModal"
 
 const Profile = ({ navigation }) => {
+  const {logout} = useContext(UserContext)
   const {user} = useContext(UserContext)
   const [userData, setUserData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [biometricEnabled, setBiometricEnabled] = useState(false)
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.removeItem("userToken")
-    const logout = ()=>{
-      
-    }
+    //logout();
     // Simulate fetching user data
     setTimeout(() => {
       // This is the mock data provided
@@ -86,6 +86,12 @@ const Profile = ({ navigation }) => {
           </View>
         </View>
 
+    
+        <View>
+     
+        </View>
+      
+
         {/* Menu Items */}
         <View style={styles.menuSection}>
           {/* Farm Account */}
@@ -109,7 +115,7 @@ const Profile = ({ navigation }) => {
               <Text style={[styles.menuIcon, styles.iconGreen]}>📦</Text>
             </View>
             <View style={styles.menuTextContainer}>
-              <Text style={styles.menuTitle}>Box ID: {user.data.box_id.box_id}</Text>
+              <Text style={styles.menuTitle}>Box ID:</Text>
               <Text style={styles.menuSubtitle}>Manage your farm box</Text>
             </View>
             <View style={styles.menuAction}>
@@ -136,7 +142,7 @@ const Profile = ({ navigation }) => {
           </View>
 
           {/* Log out */}
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity onPress={()=>setVisible(true)} style={styles.menuItem}>
             <View style={styles.menuIconContainer}>
               <Text style={[styles.menuIcon, styles.iconGreen]}>↩️</Text>
             </View>
@@ -213,6 +219,12 @@ const Profile = ({ navigation }) => {
         {/* Bottom Spacer */}
         <View style={styles.bottomSpacer}></View>
       </ScrollView>
+
+      <ConfirmLogoutModal
+              visible={visible}
+              onConfirm={logout}
+              onCancel={() => setVisible(false)}
+          />
     </SafeAreaView>
   )
 }

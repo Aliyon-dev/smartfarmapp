@@ -31,6 +31,7 @@ const SignIn = () => {
           router.push("/home", undefined, { shallow: true })
         }
         else{
+          console.log('error')
           Alert.alert("Login Failed",  "Invalid email or password")
         }
       }
@@ -78,7 +79,7 @@ const SignIn = () => {
       <ScrollView>
         <View style={styles.container}>
             <View style={styles.flex}>
-                <Image source={require('../../assets/logo.jpg')}/>
+                <Image style={{width:200, height: 200}} source={require('../../assets/logo.png')}/>
                 <Text style={{
                     fontSize: 20,
                     fontWeight: '800',
