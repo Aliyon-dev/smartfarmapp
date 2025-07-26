@@ -79,7 +79,7 @@ const SignIn = () => {
       <ScrollView>
         <View style={styles.container}>
             <View style={styles.flex}>
-                <Image style={{width:200, height: 200}} source={require('../../assets/logo.png')}/>
+                <Image resizeMode='contain' style={{width:200, height: 200}} source={require('../../assets/logo.jpg')}/>
                 <Text style={{
                     fontSize: 20,
                     fontWeight: '800',

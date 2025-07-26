@@ -38,6 +38,9 @@ const Chatbot = () => {
   const scrollY = useRef(new Animated.Value(0)).current
   const wsRef =  useRef(null)
   const [status, setStatus] =  useState("connecting")
+  const typingAnim1 = useRef(new Animated.Value(0)).current
+  const typingAnim2 = useRef(new Animated.Value(0)).current
+  const typingAnim3 = useRef(new Animated.Value(0)).current
   
 
   // Sample initial messages
@@ -66,16 +69,15 @@ const Chatbot = () => {
   }, [])
 
   useEffect(() => {
-    //console.log(userToken)
-    //const ws = new WebSocket(`ws://13.48.30.229:8001/ws/chatbot/?token=46ce322920e44d1a583badfd6eb2b6b45edb3df8`)
+    if (!userToken) return;
+    
     const ws = new WebSocket(`wss://api.techiqsmart.farm/ws/chatbot/?token=${userToken}`)
     wsRef.current =  ws
+    
     ws.onopen = () => {
       setStatus("connected")
       console.log("WebSocket connection opened")
     }
-
-  
 
     ws.onmessage = (e) => {
       try{
@@ -95,22 +97,31 @@ const Chatbot = () => {
           setIsLoading(false);
           setIsTyping(false);
           flatListRef.current?.scrollToEnd({ animated: true })
-          ///saveMessages((prevMessages) => [...prevMessages, aiMessage])
         }
       }
       catch(error){
         console.log("Error parsing message:", error)
+        setIsLoading(false);
+        setIsTyping(false);
       }
+    }
 
+    ws.onerror = (error) => {
+      console.log("WebSocket error:", error)
+      setStatus("error")
+      setIsLoading(false);
+      setIsTyping(false);
     }
 
     ws.onclose = () => {
       console.log("WebSocket connection closed")
+      setStatus("disconnected")
     }
+    
     return () => {
       ws.close()
     }
-  }, [])
+  }, [userToken])
 
   const loadMessages = async () => {
     try {
@@ -140,7 +151,7 @@ const Chatbot = () => {
   }
 
   const handleSubmit = async () => {
-    if (!input.trim() || isLoading) return
+    if (!input.trim() || isLoading || !wsRef.current) return
 
     Vibration.vibrate(10) // Haptic feedback
     Keyboard.dismiss()
@@ -160,7 +171,14 @@ const Chatbot = () => {
     setInputHeight(40) // Reset input height
     setIsLoading(true)
     setIsTyping(true)
-    wsRef.current.send(JSON.stringify(api_message))
+    
+    try {
+      wsRef.current.send(JSON.stringify(api_message))
+    } catch (error) {
+      console.log("Error sending message:", error)
+      setIsLoading(false)
+      setIsTyping(false)
+    }
 
     /* try {
       // Simulate AI response - Replace with actual API call
@@ -218,7 +236,11 @@ const Chatbot = () => {
           isLastMessage && { opacity: fadeAnim },
         ]}
       >
-
+        {item.role === "assistant" && (
+          <View style={styles.avatarContainer}>
+            <Image style={styles.avatar} source={require("../../assets/icons/terra.png")} />
+          </View>
+        )}
         <View
           style={[styles.messageContent, item.role === "user" ? styles.userMessageContent : styles.aiMessageContent]}
         >
@@ -233,6 +255,49 @@ const Chatbot = () => {
     )
   }
 
+  const startTypingAnimation = () => {
+    const animateTyping = (animValue, delay) => {
+      return Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(animValue, {
+            toValue: 1,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+          Animated.timing(animValue, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+        ])
+      )
+    }
+
+    Animated.parallel([
+      animateTyping(typingAnim1, 0),
+      animateTyping(typingAnim2, 200),
+      animateTyping(typingAnim3, 400),
+    ]).start()
+  }
+
+  const stopTypingAnimation = () => {
+    typingAnim1.stopAnimation()
+    typingAnim2.stopAnimation()
+    typingAnim3.stopAnimation()
+    typingAnim1.setValue(0)
+    typingAnim2.setValue(0)
+    typingAnim3.setValue(0)
+  }
+
+  useEffect(() => {
+    if (isTyping) {
+      startTypingAnimation()
+    } else {
+      stopTypingAnimation()
+    }
+  }, [isTyping])
+
   const renderTypingIndicator = () => {
     if (!isTyping) return null
 
@@ -243,9 +308,39 @@ const Chatbot = () => {
         </View>
         <View style={[styles.messageContent, styles.aiMessageContent]}>
           <View style={styles.typingContainer}>
-            <View style={[styles.typingDot, styles.typingDot1]} />
-            <View style={[styles.typingDot, styles.typingDot2]} />
-            <View style={[styles.typingDot, styles.typingDot3]} />
+            <Animated.View 
+              style={[
+                styles.typingDot,
+                {
+                  opacity: typingAnim1.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.3, 1],
+                  }),
+                },
+              ]} 
+            />
+            <Animated.View 
+              style={[
+                styles.typingDot,
+                {
+                  opacity: typingAnim2.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.3, 1],
+                  }),
+                },
+              ]} 
+            />
+            <Animated.View 
+              style={[
+                styles.typingDot,
+                {
+                  opacity: typingAnim3.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.3, 1],
+                  }),
+                },
+              ]} 
+            />
           </View>
         </View>
       </View>
@@ -280,7 +375,16 @@ const Chatbot = () => {
             <View>
               <Text style={styles.headerTitle}>Terra Bot</Text>
               <View style={styles.statusContainer}>
-                <View style={styles.statusDot}></View>
+                <View style={[
+                  styles.statusDot,
+                  {
+                    backgroundColor: 
+                      status === "connected" ? "#4CAF50" :
+                      status === "connecting" ? "#FF9800" :
+                      status === "error" ? "#F44336" :
+                      "#9E9E9E"
+                  }
+                ]}></View>
                 <Text style={styles.statusText}>{status}</Text>
               </View>
             </View>
@@ -406,7 +510,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   statusDot: {
-    backgroundColor: "#4CAF50",
     width: 8,
     height: 8,
     borderRadius: 4,
@@ -570,24 +673,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: "#4CAF50",
     marginHorizontal: 3,
-    opacity: 0.6,
-  },
-  typingDot1: {
-    animationName: "bounce",
-    animationDuration: "0.6s",
-    animationIterationCount: "infinite",
-  },
-  typingDot2: {
-    animationName: "bounce",
-    animationDuration: "0.6s",
-    animationDelay: "0.2s",
-    animationIterationCount: "infinite",
-  },
-  typingDot3: {
-    animationName: "bounce",
-    animationDuration: "0.6s",
-    animationDelay: "0.4s",
-    animationIterationCount: "infinite",
   },
   emptyChatContainer: {
     flex: 1,

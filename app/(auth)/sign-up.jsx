@@ -95,63 +95,79 @@ const validate = ()=>{
 
     switch(step){
         case 1:
-
-            if(formData.password.length < 6){
-                handleError('password must be at least 6 characters long', 'password')
+            if(!formData.email){
+                handleError('Please enter email', 'email')
+                valid = false
+            } else if(!formData.email.match(/\S+@\S+\.\S+/)){
+                handleError('Please enter a valid email', 'email')
+                valid = false
             }
 
-            if(!formData.box_id || formData.box_id.length < 6){
-                handleError('Box ID must be 6 character long', 'box_id')
-                }
+            if(!formData.password){
+                handleError('Please enter password', 'password')
+                valid = false
+            } else if(formData.password.length < 6){
+                handleError('Password must be at least 6 characters long', 'password')
+                valid = false
+            }
             
-              if(!formData.email){
-                handleError('please enter email', 'email')
-                return
-            }else if(!formData.email.match(/\S+@\S+\.\S+/)){
-                handleError('please enter a valid email', 'email')
-                return
+            {/*
+            if(!formData.box_id){
+                handleError('Please enter Box ID', 'box_id')
+                valid = false
+            } else if(formData.box_id.length < 6){
+                handleError('Box ID must be 6 characters long', 'box_id')
+                valid = false
+            } */}
+
+            if(valid) {
+                handleNextStep()
             }
-            handleNextStep()
+            break;
 
         case 2:
             if(!formData.first_name){
-                handleError('please enter your first name', 'first_name')
-                return
+                handleError('Please enter your first name', 'first_name')
+                valid = false
             }
 
             if(!formData.last_name){
-                handleError('please enter your last name', 'last_name')
-                return 
+                handleError('Please enter your last name', 'last_name')
+                valid = false
             }
-            handleNextStep()
+
+            if(valid) {
+                handleNextStep()
+            }
+            break;
 
         case 3:
             if(!formData.phone){
-                handleError('please enter your phone number', 'phone')
-                return
-            }
-            if(formData.phone.length < 13){
-                handleError('phone number  must be 12 digits long', 'phone')
-            }
-            else if(!formData.phone.match(/^\+260\s?\d{9}$/)){
+                handleError('Please enter your phone number', 'phone')
+                valid = false
+            } else if(formData.phone.length < 13){
+                handleError('Phone number must be 12 digits long', 'phone')
+                valid = false
+            } else if(!formData.phone.match(/^\+260\s?\d{9}$/)){
                 handleError('Phone number must start with "+260"', 'phone')
-                return
+                valid = false
             }
-                
 
             if(!formData.country){
-                handleError('please select country', 'country')
-                return
+                handleError('Please select country', 'country')
+                valid = false
             }
 
             if(!formData.state){
-                handleError('please select state or province', 'state')
-                return
+                handleError('Please select state or province', 'state')
+                valid = false
             }
 
-            submitForm();
+            if(valid) {
+                submitForm();
+            }
+            break;
     }
-
 }
 
 
@@ -182,14 +198,13 @@ const renderStep = () =>{
                                 onFocus={()=>{
                                     handleError(null, 'email')
                                 }}
-       
                             />
 
                             <Input
                                 password={true}
-                                label=" Create Password"
+                                label="Create Password"
                                 iconName="lock"
-                                placeholder="create password"
+                                placeholder="Create password"
                                 onChangeText={(text) => handleInput('password', text)}
                                 value={formData.password}
                                 error = {errors.password}
@@ -197,7 +212,18 @@ const renderStep = () =>{
                                     handleError(null, 'password')
                                 }}
                             />
-                    
+                        {/*
+                            <Input
+                                label="Box ID"
+                                iconName="cube-outline"
+                                placeholder="Enter your Box ID"
+                                onChangeText={(text) => handleInput('box_id', text)}
+                                value={formData.box_id}
+                                error = {errors.box_id}
+                                onFocus={()=>{
+                                    handleError(null, 'box_id')
+                                }}
+                            /> */}
                         </View>
                         <View style={{display: 'flex', flexDirection: 'row', alignItems: 'flex-start',}}>
                             <CheckField label={'I have read and agree to our Terms of Use and             Privacy Policy'}/>
@@ -264,20 +290,7 @@ const renderStep = () =>{
                                     handleError(null, 'last_name')
                                 }}
                             />  
-                            <Input
-                                password={false}
-                                label="Phone number"
-                                iconName="phone"
-                                placeholder="Enter your phone"
-                                onChangeText={(text) => handleInput('phone', text)}
-                                value={formData.phone}
-                                error = {errors.phone}
-                                onFocus={()=>{
-                                    handleError(null, 'phone')
-                                }}
-                            />  
-                    
-                    </View>
+                        </View>
     
                     <View style={{gap:24}}>
                             <Button
@@ -287,11 +300,11 @@ const renderStep = () =>{
                             />
 
                             <Button
-                                title="previous step"
+                                title="Previous Step"
                                 loading={false}
                                 type='secondary'
                                 onPress={handlePrevStep}
-                            />          
+                            />
                     </View>
                 </SafeAreaView>
                 )
@@ -300,6 +313,19 @@ const renderStep = () =>{
                 return(            
                 <SafeAreaView style={{gap:40}}>
                     <View style={{gap: 28}}> 
+                            <Input
+                                password={false}
+                                label="Phone Number"
+                                iconName="phone"
+                                placeholder="Enter your phone number"
+                                onChangeText={(text) => handleInput('phone', text)}
+                                value={formData.phone}
+                                error = {errors.phone}
+                                onFocus={()=>{
+                                    handleError(null, 'phone')
+                                }}
+                            /> 
+
                             <Input
                                 password={false}
                                 label="Country"
@@ -315,7 +341,7 @@ const renderStep = () =>{
 
                             <Input
                                 password={false}
-                                label="state"
+                                label="State"
                                 iconName="map-marker"
                                 placeholder="Select state"
                                 onChangeText={(text) => handleInput('state', text)}
@@ -330,13 +356,13 @@ const renderStep = () =>{
 
                 <View style={{gap:24}}>
                     <Button
-                        title="Finish registration"
+                        title="Complete Registration"
                         loading={isLoading}
                         onPress={validate}
                     />
 
                     <Button
-                        title="Previous step"
+                        title="Previous Step"
                         onPress={handlePrevStep}
                         type='secondary'
                     />
@@ -358,12 +384,36 @@ const renderStep = () =>{
 
             />
             <View style={styles.flex}>
-                <Image style={{width:200, height: 200}} source={require('../../assets/logo.png')}/>
+                <Image resizeMode='contain' style={{width:200, height: 200}} source={require('../../assets/logo.jpg')}/>
                 <Text style={{
                     fontSize: 20,
                     fontWeight: '800',
                     }}>Create an Account</Text>
                 <Text style={styles.footer}>Join the future of farming with our AI-powered solutions.</Text>
+                
+                {/* Step Indicator */}
+                <View style={styles.stepIndicator}>
+                    <View style={styles.stepContainer}>
+                        <View style={[styles.stepCircle, step >= 1 ? styles.stepActive : styles.stepInactive]}>
+                            <Text style={[styles.stepText, step >= 1 ? styles.stepTextActive : styles.stepTextInactive]}>1</Text>
+                        </View>
+                        <Text style={styles.stepLabel}>Account</Text>
+                    </View>
+                    <View style={[styles.stepLine, step >= 2 ? styles.stepLineActive : styles.stepLineInactive]} />
+                    <View style={styles.stepContainer}>
+                        <View style={[styles.stepCircle, step >= 2 ? styles.stepActive : styles.stepInactive]}>
+                            <Text style={[styles.stepText, step >= 2 ? styles.stepTextActive : styles.stepTextInactive]}>2</Text>
+                        </View>
+                        <Text style={styles.stepLabel}>Personal</Text>
+                    </View>
+                    <View style={[styles.stepLine, step >= 3 ? styles.stepLineActive : styles.stepLineInactive]} />
+                    <View style={styles.stepContainer}>
+                        <View style={[styles.stepCircle, step >= 3 ? styles.stepActive : styles.stepInactive]}>
+                            <Text style={[styles.stepText, step >= 3 ? styles.stepTextActive : styles.stepTextInactive]}>3</Text>
+                        </View>
+                        <Text style={styles.stepLabel}>Details</Text>
+                    </View>
+                </View>
             </View>
             <View style={{marginTop: 20}}>
             {/* input fields  */}
@@ -379,12 +429,11 @@ const renderStep = () =>{
 }
 
 export const styles = StyleSheet.create({
-
-safeArea:{
+  safeArea:{
     height: '100%',
     backgroundColor: 'white',
     padding: 16,
-},
+  },
   layout:{
     padding: 16,
     justifyContent: 'center',
@@ -392,18 +441,72 @@ safeArea:{
     margin: 16,
     gap: 12,
     backgroundColor: "#ffffff"
-},
-
-flex:{
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-},
+  },
+  flex:{
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   footer:{
     marginTop: 8,
     fontSize: 16,
     color: '#747778',
     textAlign: 'center'
+  },
+  loadingContainer:{
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
+  stepIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  stepContainer: {
+    alignItems: 'center',
+  },
+  stepCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  stepActive: {
+    backgroundColor: '#5D87FF',
+  },
+  stepInactive: {
+    backgroundColor: '#E0E0E0',
+  },
+  stepText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  stepTextActive: {
+    color: 'white',
+  },
+  stepTextInactive: {
+    color: '#999',
+  },
+  stepLabel: {
+    fontSize: 12,
+    color: '#666',
+  },
+  stepLine: {
+    width: 40,
+    height: 2,
+    marginHorizontal: 8,
+  },
+  stepLineActive: {
+    backgroundColor: '#5D87FF',
+  },
+  stepLineInactive: {
+    backgroundColor: '#E0E0E0',
   },
 })
 
